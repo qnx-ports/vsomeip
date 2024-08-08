@@ -10,6 +10,18 @@
 
 class test_timer_t {
 public:
+#ifdef __QNX__
+    test_timer_t(std::chrono::milliseconds target_) :
+        target(target_), start(std::chrono::system_clock::now()) { }
+    test_timer_t(std::chrono::seconds target_) :
+        target(std::chrono::duration_cast<std::chrono::milliseconds>(target_)),
+        start(std::chrono::system_clock::now()) { }
+
+    bool has_elapsed() {
+        const auto current = std::chrono::system_clock::now();
+        return target <= std::chrono::duration_cast<std::chrono::seconds>(current - start);
+    }
+#else
     test_timer_t(std::chrono::milliseconds target_) :
         target(target_), start(std::chrono::high_resolution_clock::now()) { }
     test_timer_t(std::chrono::seconds target_) :
@@ -20,6 +32,7 @@ public:
         const auto current = std::chrono::high_resolution_clock::now();
         return target <= std::chrono::duration_cast<std::chrono::seconds>(current - start);
     }
+#endif
 
 private:
     std::chrono::milliseconds target;

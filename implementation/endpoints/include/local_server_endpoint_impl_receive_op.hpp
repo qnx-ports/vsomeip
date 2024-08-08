@@ -11,6 +11,17 @@
 #include <boost/asio/local/stream_protocol.hpp>
 #include <memory>
 
+#ifdef __QNX__
+#define UCRED_T struct sockcred
+#define UCRED_UID(x) x->sc_uid
+#define UCRED_GID(x) x->sc_gid
+
+// Reserved memory space to receive credential
+// through ancilliary data.
+#define CMSG_SIZE   512
+static UCRED_T *ucredptr;
+#endif
+
 namespace vsomeip_v3 {
 namespace local_endpoint_receive_op {
 
@@ -67,13 +78,25 @@ receive_cb (std::shared_ptr<storage> _data) {
 
                 union {
                     struct cmsghdr cmh;
+#ifdef __QNX__
+                    char   control[CMSG_SIZE];
+#else
                     char   control[CMSG_SPACE(sizeof(struct ucred))];
+#endif
                 } control_un;
 
                 // Set 'control_un' to describe ancillary data that we want to receive
+#ifdef __QNX__
+                control_un.cmh.cmsg_len = CMSG_LEN(sizeof(UCRED_T));
+#else
                 control_un.cmh.cmsg_len = CMSG_LEN(sizeof(struct ucred));
+#endif
                 control_un.cmh.cmsg_level = SOL_SOCKET;
+#ifdef __QNX__
+                control_un.cmh.cmsg_type = SCM_CREDS;
+#else
                 control_un.cmh.cmsg_type = SCM_CREDENTIALS;
+#endif
 
                 // Build header with all informations to call ::recvmsg
                 auto its_header = msghdr();
@@ -105,21 +128,35 @@ receive_cb (std::shared_ptr<storage> _data) {
                     _error = boost::asio::error::eof;
 
                 // Extract credentials (UID/GID)
+#ifdef __QNX__
+                UCRED_T *its_credentials;
+#else
                 struct ucred *its_credentials;
+#endif
                 for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&its_header);
                      cmsg != NULL;
                      cmsg = CMSG_NXTHDR(&its_header, cmsg))
                 {
                     if (cmsg->cmsg_level == SOL_SOCKET
+#ifdef __QNX__
+                        && cmsg->cmsg_type == SCM_CREDS
+                        && cmsg->cmsg_len == CMSG_LEN(sizeof(UCRED_T))) {
+                        its_credentials = (UCRED_T *) CMSG_DATA(cmsg);
+                        if (its_credentials) {
+                            _data->uid_ = UCRED_UID(ucredptr);
+                            _data->gid_ = UCRED_GID(ucredptr);
+                            break;
+                        }
+#else
                         && cmsg->cmsg_type == SCM_CREDENTIALS
                         && cmsg->cmsg_len == CMSG_LEN(sizeof(struct ucred))) {
-
                         its_credentials = (struct ucred *) CMSG_DATA(cmsg);
                         if (its_credentials) {
                             _data->uid_ = its_credentials->uid;
                             _data->gid_ = its_credentials->gid;
                             break;
                         }
+#endif
                     }
                 }
 

@@ -21,6 +21,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include "../../utility/include/qnx_helper.hpp"
+#define CMSG_SIZE 512
 #endif
 
 namespace vsomeip_v3 {
@@ -251,8 +252,13 @@ receive_cb (std::shared_ptr<storage> _data) {
                 union {
                     struct cmsghdr cmh;
                     union {
+#ifdef __QNX__
+                        char   v4[CMSG_SIZE];
+                        char   v6[CMSG_SIZE];
+#else
                         char   v4[CMSG_SPACE(sizeof(struct in_pktinfo))];
                         char   v6[CMSG_SPACE(sizeof(struct in6_pktinfo))];
+#endif
                     } control;
                 } control_un;
 
@@ -306,11 +312,11 @@ receive_cb (std::shared_ptr<storage> _data) {
                     _data->sender_ = endpoint_type_t(its_sender_address, its_sender_port);
 
                     // destination
+#if !defined(__QNX__) || (defined(__QNX__) && __QNX__ < 800)
                     struct in_pktinfo *its_pktinfo_v4;
                     for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&its_header);
                          cmsg != NULL;
                          cmsg = CMSG_NXTHDR(&its_header, cmsg)) {
-
                         if (cmsg->cmsg_level == IPPROTO_IP
                             && cmsg->cmsg_type == IP_PKTINFO
                             && cmsg->cmsg_len == CMSG_LEN(sizeof(*its_pktinfo_v4))) {
@@ -323,6 +329,21 @@ receive_cb (std::shared_ptr<storage> _data) {
                             }
                         }
                     }
+#else
+                    struct sockaddr_in *dst_addr = nullptr;
+                    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&its_header);
+                         cmsg != NULL;
+                         cmsg = CMSG_NXTHDR(&its_header, cmsg)) {
+                        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_RECVDSTADDR) {
+                            dst_addr = (struct sockaddr_in *)CMSG_DATA(cmsg);
+                            if (dst_addr) {
+                                _data->destination_ = boost::asio::ip::address_v4(
+                                    ntohl(dst_addr->sin_addr.s_addr));
+                                break;
+                            }
+                        }
+                    }
+#endif
                 } else {
                     boost::asio::ip::address_v6::bytes_type its_bytes;
 

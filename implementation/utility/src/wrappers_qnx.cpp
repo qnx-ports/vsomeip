@@ -16,7 +16,12 @@
 #include <string.h>
 #include <sys/dcmd_ip.h>
 #include <sys/netmgr.h>
+#if __QNX__ < 800
 #include <sys/sockmsg.h>
+#else
+#include <sys/iomsg.h>
+#include <sys/neutrino.h>
+#endif
 #include <unistd.h>
 
 typedef enum accept_msg_t {
@@ -58,7 +63,7 @@ __accept (int s, struct sockaddr *addr, socklen_t *addrlen, accept_msg_t msg_typ
 		return -1;
 	}
 
-	fd2 = ConnectAttach(info.nd, info.pid, info.chid, 0, _NTO_COF_CLOEXEC | _NTO_COF_INSECURE);
+	fd2 = ConnectAttach(info.nd, info.pid, info.chid, 0, _NTO_COF_CLOEXEC);
 	if (fd2 == -1) {
 		return -1;
 	}

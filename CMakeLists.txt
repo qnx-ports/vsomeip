@@ -272,7 +272,7 @@ if (MSVC)
     set(USE_RT "")
     link_directories(${Boost_LIBRARY_DIR_DEBUG})
     add_compile_options(/MD$<$<CONFIG:Debug>:d>)
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+elseif(QNX)
     set(USE_RT "")
 else()
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OS_CXX_FLAGS} -g ${OPTIMIZE} ${NO_DEPRECATED} ${EXPORTSYMBOLS}")
@@ -673,7 +673,7 @@ enable_testing()
 
 add_subdirectory( test EXCLUDE_FROM_ALL )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "QNX")
     install(DIRECTORY ${PROJECT_BINARY_DIR}/test/
         DESTINATION bin/vsomeip_tests/test
         PATTERN "CMakeFiles" EXCLUDE

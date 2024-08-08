@@ -47,7 +47,7 @@ void tcp_server_endpoint_impl::init(const endpoint_type& _local,
     if (_error)
         return;
 
-#if defined(__linux__) || defined(ANDROID) || defined(__QNX__)
+#if defined(__linux__) || defined(ANDROID) || (defined(__QNX__) && __QNX__ < 800)
     // If specified, bind to device
     std::string its_device(configuration_->get_device());
     if (its_device != "") {

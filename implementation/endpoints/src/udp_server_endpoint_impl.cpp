@@ -70,7 +70,7 @@ void udp_server_endpoint_impl::init(const endpoint_type& _local,
     if (_error)
         return;
 
-#if defined(__linux__) || defined(ANDROID) || defined(__QNX__)
+#if defined(__linux__) || defined(ANDROID) || (defined(__QNX__) && __QNX__ < 800)
     // If specified, bind to device
     std::string its_device(configuration_->get_device());
     if (its_device != "") {
@@ -767,6 +767,7 @@ void udp_server_endpoint_impl::set_multicast_option(const boost::asio::ip::addre
             return;
         }
 
+#if !defined(__QNX__) || (defined(__QNX__) && __QNX__ < 800)
 #ifdef _WIN32
         const char* its_pktinfo_option("0001");
         ::setsockopt(multicast_socket_->native_handle(), (is_v4_ ? IPPROTO_IP : IPPROTO_IPV6),
@@ -777,6 +778,7 @@ void udp_server_endpoint_impl::set_multicast_option(const boost::asio::ip::addre
         ::setsockopt(multicast_socket_->native_handle(), (is_v4_ ? IPPROTO_IP : IPPROTO_IPV6),
                      (is_v4_ ? IP_PKTINFO : IPV6_RECVPKTINFO), &its_pktinfo_option,
                      sizeof(its_pktinfo_option));
+#endif
 #endif
         if (multicast_recv_buffer_.empty())
             multicast_recv_buffer_.resize(VSOMEIP_MAX_UDP_MESSAGE_SIZE, 0);
