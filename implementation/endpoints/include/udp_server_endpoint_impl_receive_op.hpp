@@ -23,6 +23,10 @@
 #include "../../utility/include/qnx_helper.hpp"
 #endif
 
+#ifdef __QNX__
+#define CMSG_SIZE 512
+#endif
+
 namespace vsomeip_v3 {
 namespace udp_endpoint_receive_op {
 
@@ -250,8 +254,13 @@ receive_cb (std::shared_ptr<storage> _data) {
                 union {
                     struct cmsghdr cmh;
                     union {
+#ifdef __QNX__
+                        char   v4[CMSG_SIZE];
+                        char   v6[CMSG_SIZE];
+#else
                         char   v4[CMSG_SPACE(sizeof(struct in_pktinfo))];
                         char   v6[CMSG_SPACE(sizeof(struct in6_pktinfo))];
+#endif
                     } control;
                 } control_un;
 
