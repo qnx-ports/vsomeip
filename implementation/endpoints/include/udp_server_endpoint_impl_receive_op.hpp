@@ -19,6 +19,10 @@
 
 #include <vsomeip/internal/logger.hpp>
 
+#ifdef __QNX__
+#define CMSG_SIZE 512
+#endif
+
 namespace vsomeip_v3 {
 namespace udp_endpoint_receive_op {
 
@@ -62,7 +66,7 @@ struct storage :
         multicast_id_(_multicast_id),
         is_v4_(_is_v4),
         destination_(_destination),
-        bytes_(_bytes) 
+        bytes_(_bytes)
     {}
 };
 
@@ -241,8 +245,13 @@ receive_cb (std::shared_ptr<storage> _data) {
                 union {
                     struct cmsghdr cmh;
                     union {
+#ifdef __QNX__
+                        char   v4[CMSG_SIZE];
+                        char   v6[CMSG_SIZE];
+#else
                         char   v4[CMSG_SPACE(sizeof(struct in_pktinfo))];
                         char   v6[CMSG_SPACE(sizeof(struct in6_pktinfo))];
+#endif
                     } control;
                 } control_un;
 
@@ -275,7 +284,7 @@ receive_cb (std::shared_ptr<storage> _data) {
                 if (_error == boost::asio::error::would_block
                         || _error == boost::asio::error::try_again) {
                     _data->socket_.async_wait(
-                        socket_type_t::wait_read, 
+                        socket_type_t::wait_read,
                         receive_cb(_data)
                     );
                     return;
