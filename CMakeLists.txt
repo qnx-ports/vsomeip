@@ -660,7 +660,7 @@ enable_testing()
 
 add_subdirectory( test EXCLUDE_FROM_ALL )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "QNX")
     install(DIRECTORY ${PROJECT_BINARY_DIR}/test/
         DESTINATION bin/vsomeip_tests/test
         PATTERN "CMakeFiles" EXCLUDE

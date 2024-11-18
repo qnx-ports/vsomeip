@@ -310,6 +310,7 @@ receive_cb (std::shared_ptr<storage> _data) {
                          cmsg != NULL;
                          cmsg = CMSG_NXTHDR(&its_header, cmsg)) {
 
+#if !defined(__QNX__) || (defined(__QNX__) && __QNX__ < 800)
                         if (cmsg->cmsg_level == IPPROTO_IP
                             && cmsg->cmsg_type == IP_PKTINFO
                             && cmsg->cmsg_len == CMSG_LEN(sizeof(*its_pktinfo_v4))) {
@@ -321,6 +322,7 @@ receive_cb (std::shared_ptr<storage> _data) {
                                 break;
                             }
                         }
+#endif
                     }
                 } else {
                     boost::asio::ip::address_v6::bytes_type its_bytes;
