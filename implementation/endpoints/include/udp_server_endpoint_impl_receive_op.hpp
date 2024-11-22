@@ -305,16 +305,13 @@ receive_cb (std::shared_ptr<storage> _data) {
                     _data->sender_ = endpoint_type_t(its_sender_address, its_sender_port);
 
                     // destination
+#if !defined(__QNX__) || (defined(__QNX__) && __QNX__ < 800)
                     struct in_pktinfo *its_pktinfo_v4;
                     for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&its_header);
                          cmsg != NULL;
                          cmsg = CMSG_NXTHDR(&its_header, cmsg)) {
                         if (cmsg->cmsg_level == IPPROTO_IP
-#if !defined(__QNX__) || (defined(__QNX__) && __QNX__ < 800)
                             && cmsg->cmsg_type == IP_PKTINFO
-#else
-                            && cmsg->cmsg_type == IP_RECVDSTADDR
-#endif
                             && cmsg->cmsg_len == CMSG_LEN(sizeof(*its_pktinfo_v4))) {
 
                             its_pktinfo_v4 = (struct in_pktinfo*) CMSG_DATA(cmsg);
@@ -325,6 +322,21 @@ receive_cb (std::shared_ptr<storage> _data) {
                             }
                         }
                     }
+#else
+                    struct sockaddr_in *dst_addr = nullptr;
+                    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&its_header);
+                         cmsg != NULL;
+                         cmsg = CMSG_NXTHDR(&its_header, cmsg)) {
+                        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_RECVDSTADDR) {
+                            dst_addr = (struct sockaddr_in *)CMSG_DATA(cmsg);
+                            if (dst_addr) {
+                                _data->destination_ = boost::asio::ip::address_v4(
+                                    ntohl(dst_addr->sin_addr.s_addr));
+                                break;
+                            }
+                        }
+                    }
+#endif
                 } else {
                     boost::asio::ip::address_v6::bytes_type its_bytes;
 
