@@ -63,7 +63,11 @@ __accept (int s, struct sockaddr *addr, socklen_t *addrlen, accept_msg_t msg_typ
 		return -1;
 	}
 
+#if __QNX__ >= 800
+	fd2 = ConnectAttach(info.nd, info.pid, info.chid, 0, _NTO_COF_CLOEXEC);
+#else
 	fd2 = ConnectAttach(info.nd, info.pid, info.chid, 0, _NTO_COF_CLOEXEC | _NTO_COF_INSECURE);
+#endif
 	if (fd2 == -1) {
 		return -1;
 	}
