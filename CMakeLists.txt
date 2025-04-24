@@ -211,7 +211,7 @@ endif()
 # SystemD
 pkg_check_modules(SystemD "libsystemd")
 
-if(NOT SystemD_FOUND)
+if(NOT SystemD_FOUND OR QNX)
 MESSAGE( STATUS "Systemd was not found, watchdog disabled!")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITHOUT_SYSTEMD")
 endif(NOT SystemD_FOUND)
