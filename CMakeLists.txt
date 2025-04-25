@@ -209,12 +209,15 @@ endif(DLT_FOUND)
 endif()
 
 # SystemD
+if(QNX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITHOUT_SYSTEMD")
+else()
 pkg_check_modules(SystemD "libsystemd")
-
-if(NOT SystemD_FOUND OR QNX)
+if(NOT SystemD_FOUND)
 MESSAGE( STATUS "Systemd was not found, watchdog disabled!")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITHOUT_SYSTEMD")
 endif(NOT SystemD_FOUND)
+endif()
 
 # Multiple routing managers
 if (VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS EQUAL 1)
