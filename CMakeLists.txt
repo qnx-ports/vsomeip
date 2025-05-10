@@ -441,7 +441,7 @@ set(EXAMPLE_CONFIG_FILES
 ################################################################################
 # Configuration parameters
 ################################################################################
-if(${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "QNX")
     set (VSOMEIP_BASE_PATH "/var")
 else()
     set (VSOMEIP_BASE_PATH "/tmp")
