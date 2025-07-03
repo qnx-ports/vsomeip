@@ -14,6 +14,12 @@
 // Version should be incremented on breaking API change
 #define VSOMEIP_APPLICATION_PLUGIN_VERSION              1
 
+#if __QNX__ >= 800
+#ifdef STATE_STOPPED
+#undef STATE_STOPPED
+#endif
+#endif
+
 namespace vsomeip_v3 {
 
 enum class application_plugin_state_e : uint8_t {
