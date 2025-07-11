@@ -23,7 +23,11 @@ public:
 
 private:
     std::chrono::milliseconds target;
+#if defined(__QNX__)
+    std::chrono::high_resolution_clock::time_point start;
+#else
     std::chrono::system_clock::time_point start;
+#endif
 };
 
 #endif // TEST_TIMER_HPP

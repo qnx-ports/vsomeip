@@ -12,6 +12,8 @@
  #define SO_BINDTODEVICE 0x0800		/* restrict traffic to an interface */
  #define IP_PKTINFO		25   /* int; send interface and src addr */
 
+#if __QNX__ >= 800
+
 /* Structure used for IP_PKTINFO.  */
 #ifndef	_STRUCT_IN_PKTINFO
 struct in_pktinfo
@@ -22,6 +24,7 @@ struct in_pktinfo
   };
 #define	_STRUCT_IN_PKTINFO
 #endif
+#endif // __QNX__ < 800
 
  #endif // VSOMEIP_V3_QNX_HELPER_HPP_
 
