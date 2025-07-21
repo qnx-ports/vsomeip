@@ -66,7 +66,7 @@ receive_cb (std::shared_ptr<storage> _data) {
         if (!_error) {
             if (!_data->socket_.native_non_blocking())
                 _data->socket_.native_non_blocking(true, _error);
-            #if defined(__linux__)
+            #if defined(__linux__) || defined(__QNX__)
             for (;;) {
                 ssize_t its_result;
                 int its_flags(0);
