@@ -12,9 +12,7 @@
 
 #include <vsomeip/internal/logger.hpp>
 
-#ifndef __QNX__
 #include "../include/credentials.hpp"
-#endif
 #include "../include/endpoint_host.hpp"
 #include "../include/local_uds_server_endpoint_impl.hpp"
 #include "../include/local_server_endpoint_impl_receive_op.hpp"
@@ -64,13 +62,12 @@ local_uds_server_endpoint_impl::local_uds_server_endpoint_impl(
     if (ec)
         VSOMEIP_ERROR << __func__
             << ": listen failed (" << ec.message() << ")";
-#ifndef __QNX__
+
     if (chmod(_local.path().c_str(),
             static_cast<mode_t>(_configuration->get_permissions_uds())) == -1) {
         VSOMEIP_ERROR << __func__ << ": chmod: " << strerror(errno);
     }
     credentials::activate_credentials(acceptor_.native_handle());
-#endif
 }
 
 local_uds_server_endpoint_impl::local_uds_server_endpoint_impl(
@@ -95,13 +92,11 @@ local_uds_server_endpoint_impl::local_uds_server_endpoint_impl(
        VSOMEIP_ERROR << __func__
            << ": assign failed (" << ec.message() << ")";
 
-#ifndef __QNX__
     if (chmod(_local.path().c_str(),
             static_cast<mode_t>(_configuration->get_permissions_uds())) == -1) {
        VSOMEIP_ERROR << __func__ << ": chmod: " << strerror(errno);
     }
     credentials::activate_credentials(acceptor_.native_handle());
-#endif
 }
 
 local_uds_server_endpoint_impl::~local_uds_server_endpoint_impl() {
@@ -279,7 +274,6 @@ void local_uds_server_endpoint_impl::accept_cbk(
     }
 
     if (!_error) {
-#ifndef __QNX__
         auto its_host = endpoint_host_.lock();
         client_t its_client = 0;
         std::string its_client_host;
@@ -374,7 +368,6 @@ void local_uds_server_endpoint_impl::accept_cbk(
             }
             _connection->set_bound_client_host(its_client_host);
         }
-#endif
         _connection->start();
     }
 }
