@@ -11,9 +11,7 @@
 #include <vsomeip/defines.hpp>
 #include <vsomeip/internal/logger.hpp>
 
-#ifndef __QNX__
 #include "../include/credentials.hpp"
-#endif
 #include "../include/endpoint_host.hpp"
 #include "../include/local_uds_client_endpoint_impl.hpp"
 #include "../include/local_uds_server_endpoint_impl.hpp"
@@ -128,7 +126,6 @@ void local_uds_client_endpoint_impl::connect() {
             socket_->connect(remote_, its_connect_error);
 
             // Credentials
-            #ifndef __QNX__
             if (!its_connect_error) {
                 auto its_host = endpoint_host_.lock();
                 if (its_host) {
@@ -141,7 +138,6 @@ void local_uds_client_endpoint_impl::connect() {
                         << its_connect_error.message() << " / " << std::dec
                         << its_connect_error.value() << ")";
             }
-            #endif
         } else {
             VSOMEIP_WARNING << "local_client_endpoint::connect: Error opening socket: "
                     << its_error.message() << " (" << std::dec << its_error.value()
