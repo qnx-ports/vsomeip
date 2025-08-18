@@ -130,12 +130,22 @@ void udp_server_endpoint_impl::init(const endpoint_type& _local,
         unicast_socket_->set_option(boost::asio::socket_base::receive_buffer_size(
                                             static_cast<int>(its_udp_recv_buffer_size)),
                                     _error);
-
+#ifdef __QNX__
+        if (_error) {
+            boost::asio::socket_base::receive_buffer_size default_size;
+            unicast_socket_->get_option(default_size, _error);
+            VSOMEIP_WARNING << "usei::" << __func__
+                            << ": Error setting buffer size option: " << _error;
+            VSOMEIP_WARNING << "usei::" << __func__
+                            << ": Using system default buffer size for QNX: " << default_size.value();
+        }
+#else
         if (_error) {
             VSOMEIP_WARNING << "usei::" << __func__
                             << ": Error setting buffer size option: " << _error;
             return;
         }
+#endif
         boost::asio::socket_base::receive_buffer_size its_option;
         unicast_socket_->get_option(its_option, _error);
 
