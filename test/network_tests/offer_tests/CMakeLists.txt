@@ -18,6 +18,7 @@ set(configuration_files
     offer_test_external_slave.json
     offer_test_external_slave_starter.sh
     offer_test_local.json
+    offer_test_local_starter_qnx.sh
     offer_test_local_starter.sh
     offer_test_multiple_offerings.json
     offer_test_multiple_offerings_starter.sh
